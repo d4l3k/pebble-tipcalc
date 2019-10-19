@@ -4,85 +4,108 @@
  * This is where you write your app.
  */
 
-var UI = require('ui');
-var Vector2 = require('vector2');
+var UI = require('ui')
+var Vector2 = require('vector2')
 
-var main = new UI.Card({
-  title: 'Pebble.js',
-  icon: 'images/menu_icon.png',
-  subtitle: 'Hello World!',
-  body: 'Press any button.',
-  subtitleColor: 'indigo', // Named colors
-  bodyColor: '#9a0036' // Hex colors
-});
+var state = {
+  cost: 20.0,
+  tip: 15,
+  selected: 0
+}
 
-main.show();
+function modify (amount) {
+  if (state.selected >= 0 && state.selected < 4) {
+    state.cost += amount * (0.1 ** state.selected) * 10
+  } else if (state.selected === 4) {
+    state.tip += amount
+  }
+}
 
-main.on('click', 'up', function(e) {
-  var menu = new UI.Menu({
-    sections: [{
-      items: [{
-        title: 'Pebble.js',
-        icon: 'images/menu_icon.png',
-        subtitle: 'Can do Menus'
-      }, {
-        title: 'Second Item',
-        subtitle: 'Subtitle Text'
-      }, {
-        title: 'Third Item',
-      }, {
-        title: 'Fourth Item',
-      }]
-    }]
-  });
-  menu.on('select', function(e) {
-    console.log('Selected item #' + e.itemIndex + ' of section #' + e.sectionIndex);
-    console.log('The item is titled "' + e.item.title + '"');
-  });
-  menu.show();
-});
+var main = new UI.Window({
+  backgroundColor: 'white'
+})
 
-main.on('click', 'select', function(e) {
-  var wind = new UI.Window({
-    backgroundColor: 'black'
-  });
-  var radial = new UI.Radial({
-    size: new Vector2(140, 140),
-    angle: 0,
-    angle2: 300,
-    radius: 20,
-    backgroundColor: 'cyan',
-    borderColor: 'celeste',
-    borderWidth: 1,
-  });
-  var textfield = new UI.Text({
-    size: new Vector2(140, 60),
-    font: 'gothic-24-bold',
-    text: 'Dynamic\nWindow',
-    textAlign: 'center'
-  });
-  var windSize = wind.size();
-  // Center the radial in the window
-  var radialPos = radial.position()
-      .addSelf(windSize)
-      .subSelf(radial.size())
-      .multiplyScalar(0.5);
-  radial.position(radialPos);
-  // Center the textfield in the window
-  var textfieldPos = textfield.position()
-      .addSelf(windSize)
-      .subSelf(textfield.size())
-      .multiplyScalar(0.5);
-  textfield.position(textfieldPos);
-  wind.add(radial);
-  wind.add(textfield);
-  wind.show();
-});
+main.add(new UI.Rect({
+  position: new Vector2(0, 0),
+  size: new Vector2(180, 50),
+  backgroundColor: '#AAAAAA'
+}))
 
-main.on('click', 'down', function(e) {
-  var card = new UI.Card();
-  card.title('A Card');
-  card.subtitle('Is a Window');
-  card.body('The simplest window type in Pebble.js.');
-  card.show();
-});
+main.add(new UI.Text({
+  position: new Vector2(0, 20),
+  size: new Vector2(180, 60),
+  textAlign: 'center',
+  font: 'gothic-18-bold',
+  text: 'Tip Calc',
+  color: 'black'
+}))
+
+var cost = new UI.Text({
+  position: new Vector2(20, 55),
+  size: new Vector2(140, 180),
+  textAlign: 'center',
+  color: 'black'
+})
+main.add(cost)
+
+var tip = new UI.Text({
+  position: new Vector2(20, 80),
+  size: new Vector2(140, 180),
+  textAlign: 'center',
+  color: 'black'
+})
+main.add(tip)
+
+main.add(new UI.Rect({
+  position: new Vector2(0, 120),
+  size: new Vector2(180, 60),
+  backgroundColor: '#00FF55'
+}))
+
+var total = new UI.Text({
+  position: new Vector2(20, 120),
+  size: new Vector2(140, 50),
+  textAlign: 'center',
+  color: 'black'
+})
+main.add(total)
+
+function render () {
+  var displayCost = state.cost.toFixed(2)
+  var stateIdx = {
+    0: -4,
+    1: -3,
+    2: -1,
+    3: displayCost.length,
+  }
+  var splice = stateIdx[state.selected]
+  if (splice) {
+    displayCost = displayCost.slice(0, splice) + '_' + displayCost.slice(splice, displayCost.length)
+  }
+
+  cost.text('$' + displayCost)
+  tip.text('%' + state.tip + (state.selected === 4 ? '_' : ''))
+  var tipAmount = state.cost * state.tip / 100
+  var totalAmount = tipAmount + state.cost
+  total.text('+$' + tipAmount.toFixed(2) + ' =$' + totalAmount.toFixed(2))
+}
+
+render()
+
+main.show()
+
+main.on('click', 'up', function (e) {
+  modify(1)
+  render()
+})
+
+main.on('click', 'select', function (e) {
+  state.selected = (state.selected + 1) % 5
+  render()
+})
+
+main.on('click', 'down', function (e) {
+  modify(-1)
+  render()
+})
+

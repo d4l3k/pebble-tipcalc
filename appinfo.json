@@ -3,8 +3,8 @@
   "capabilities": [
     "configurable"
   ],
-  "companyName": "Meiguro",
-  "longName": "Pebble.js",
+  "companyName": "Tristan Rice",
+  "longName": "Tip Calc",
   "resources": {
     "media": [
       {
@@ -31,7 +31,7 @@
     ]
   },
   "sdkVersion": "3",
-  "shortName": "Pebble.js",
+  "shortName": "Tip Calc",
   "targetPlatforms": [
     "aplite",
     "basalt",
